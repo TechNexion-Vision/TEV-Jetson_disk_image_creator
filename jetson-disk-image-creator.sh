@@ -34,6 +34,10 @@ function usage()
 	echo "                  jetson-orin-nano-devkit"
 	echo "                  jetson-orin-nano-devkit-super"
 	echo "                  igx-orin-safety"
+	echo "                  tn-tek6100-orin"
+	echo "                  tn-tek6070-orin"
+	echo "                  tn-tek6040-orin"
+	echo "                  tn-tek6020-orin"
 	echo ""
 	echo "          revision - SKU revision number"
 	echo "                  jetson-xavier-nx-devkit: default"
@@ -42,6 +46,10 @@ function usage()
 	echo "                  jetson-orin-nano-devkit: default"
 	echo "                  jetson-orin-nano-devkit-super: default"
 	echo "                  igx-orin-safety: default"
+	echo "                  tn-tek6100-orin: default"
+	echo "                  tn-tek6070-orin: default"
+	echo "                  tn-tek6040-orin: default"
+	echo "                  tn-tek6020-orin: default"
 	echo ""
 	echo "          device - Root filesystem device"
 	echo "                  jetson-xavier-nx-devkit: SD/USB"
@@ -50,6 +58,10 @@ function usage()
 	echo "                  jetson-orin-nano-devkit: SD/USB"
 	echo "                  jetson-orin-nano-devkit-super: SD/USB"
 	echo "                  igx-orin-safety: USB"
+	echo "                  tn-tek6100-orin: NVMe/USB"
+	echo "                  tn-tek6070-orin: NVMe/USB"
+	echo "                  tn-tek6040-orin: NVMe/USB"
+	echo "                  tn-tek6020-orin: NVMe/USB"
 	echo ""
 	echo "          PKC file (optional) - Private key used for signing images."
 	echo ""
@@ -148,6 +160,19 @@ function check_device()
 			;;
 		*)
 			usage "Incorrect root filesystem device - Supported devices - SD"
+			;;
+		esac
+		;;
+	tn-tek6020-orin|tn-tek6040-orin|tn-tek6070-orin|tn-tek6100-orin)
+		case "${rootfs_dev}" in
+		"NVMe" | "nvme")
+			rootfs_dev="nvme0n1p1"
+			;;
+		"USB" | "usb")
+			rootfs_dev="sda1"
+			;;
+		*)
+			usage "Incorrect root filesystem device - Supported devices - NVMe, USB"
 			;;
 		esac
 		;;
@@ -252,6 +277,30 @@ function check_pre_req()
 			target="igx-orin-safety"
 			storage="sdmmc_user"
 			;;
+		tn-tek6100-orin)
+			boardid="3767"
+			boardsku="0000"
+			target="tn-tek6100-orin"
+			storage="nvme"
+			;;
+		tn-tek6070-orin)
+			boardid="3767"
+			boardsku="0001"
+			target="tn-tek6070-orin"
+			storage="nvme"
+			;;
+		tn-tek6040-orin)
+			boardid="3767"
+			boardsku="0003"
+			target="tn-tek6040-orin"
+			storage="nvme"
+			;;
+		tn-tek6020-orin)
+			boardid="3767"
+			boardsku="0004"
+			target="tn-tek6020-orin"
+			storage="nvme"
+			;;
 		*)
 			usage "Unknown board: ${board}"
 			;;
@@ -346,10 +395,39 @@ function create_signed_images()
 	fi
 }
 
+function backup_nvme_signed_cfg()
+{
+	cp -rv "${signed_image_dir}/${signed_cfg}" "${signed_image_dir}/${signed_cfg}_backup"
+}
+
+function add_missing_file_for_signed_cfg()
+{
+	GPT_PRI_FILE=$(find ${signed_image_dir} -name "gpt_primary*bin"| rev| cut -d '/' -f 1| rev)
+	GPT_PRI_LINE=$(( $(grep -n "\"A_kernel\"" "${signed_image_dir}/${signed_cfg}" | cut -d ':' -f 1) -1 ))
+	sed -i "${GPT_PRI_LINE}s|</partition>|<filename> ${GPT_PRI_FILE} </filename></partition>|" "${signed_image_dir}/${signed_cfg}"
+
+	GPT_SEC_FILE=$(echo ${GPT_PRI_FILE}| sed 's|primary|secondary|')
+	GPT_SEC_LINE=$(grep -n "</partition>" "${signed_image_dir}/${signed_cfg}" | tail -1 | cut -d ':' -f 1)
+	sed -i "${GPT_SEC_LINE}s|</partition>|<filename> ${GPT_SEC_FILE} </filename></partition>|" "${signed_image_dir}/${signed_cfg}"
+
+	MBR_FILE=$(find ${signed_image_dir} -name "mbr*bin"| rev| cut -d '/' -f 1| rev)
+	MBR_LINE=$(( $(grep -n "\"primary_gpt\"" "${signed_image_dir}/${signed_cfg}" | cut -d ':' -f 1) -1 ))
+	sed -i "${MBR_LINE}s|</partition>|<filename> ${MBR_FILE} </filename></partition>|" "${signed_image_dir}/${signed_cfg}"
+}
+
+function restore_nvme_signed_cfg()
+{
+	cp -rv "${signed_image_dir}/${signed_cfg}_backup" "${signed_image_dir}/${signed_cfg}"
+}
+
 function create_partitions()
 {
 	echo "${script_name} - create partitions"
 
+	if [[ ${rootfs_dev} = "nvme0n1p1" ]];then
+		backup_nvme_signed_cfg
+		add_missing_file_for_signed_cfg
+	fi
 	partitions=($("${l4t_tools_dir}/nvptparser.py" "${signed_image_dir}/${signed_cfg}" "${storage}"))
 
 	sgdisk -og "${sd_blob_name}"
@@ -394,6 +472,10 @@ function write_partitions()
 
 	losetup -d "${loop_dev}"
 	loop_dev=""
+
+	if [[ ${rootfs_dev} = "nvme0n1p1" ]];then
+		restore_nvme_signed_cfg
+	fi
 }
 
 boardsku=""
