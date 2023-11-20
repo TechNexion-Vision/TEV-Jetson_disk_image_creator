@@ -110,7 +110,7 @@ function check_device()
 			;;
 		esac
 		;;
-	jetson-orin-nano-devkit)
+	jetson-orin-nano-devkit|tn-tev-rpi22-tevi|tn-tev-rpi22-tevs|tn-vls3-orin-evk-tevi|tn-vls3-orin-evk-tevs)
 		case "${rootfs_dev}" in
 		"SD" | "sd")
 			rootfs_dev="mmcblk1p1"
@@ -207,9 +207,9 @@ function check_pre_req()
 			target="jetson-agx-orin-devkit"
 			storage="sdmmc_user"
 			;;
-		jetson-orin-nano-devkit)
+		jetson-orin-nano-devkit|tn-tev-rpi22-tevi|tn-tev-rpi22-tevs|tn-vls3-orin-evk-tevi|tn-vls3-orin-evk-tevs)
 			boardid="3767"
-			target="jetson-orin-nano-devkit"
+			target="${board}"
 			storage="sdcard"
 			;;
 		tn-tek6100-orin)
