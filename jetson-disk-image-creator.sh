@@ -138,7 +138,8 @@ function check_device()
 	tn-tek6020-orin|tn-tek6040-orin|tn-tek6070-orin|tn-tek6100-orin)
 		case "${rootfs_dev}" in
 		"NVMe" | "nvme")
-			rootfs_dev="nvme0n1p1"
+			rootfs_dev="mmcblk1p1"
+			is_nvme="yes"
 			;;
 		"USB" | "usb")
 			rootfs_dev="sda1"
@@ -228,25 +229,25 @@ function check_pre_req()
 			boardid="3767"
 			boardsku="0000"
 			target="tn-tek6100-orin"
-			storage="nvme"
+			storage="sdcard"
 			;;
 		tn-tek6070-orin)
 			boardid="3767"
 			boardsku="0001"
 			target="tn-tek6070-orin"
-			storage="nvme"
+			storage="sdcard"
 			;;
 		tn-tek6040-orin)
 			boardid="3767"
 			boardsku="0003"
 			target="tn-tek6040-orin"
-			storage="nvme"
+			storage="sdcard"
 			;;
 		tn-tek6020-orin)
 			boardid="3767"
 			boardsku="0004"
 			target="tn-tek6020-orin"
-			storage="nvme"
+			storage="sdcard"
 			;;
 		*)
 			usage "Unknown board: ${board}"
@@ -291,6 +292,17 @@ function create_raw_image()
 	dd if=/dev/zero of="${sd_blob_name}" bs=1 count=0 seek="${sd_blob_size}"
 }
 
+function change_nvme_cfg_to_sd()
+{
+	echo 'EMMC_CFG="flash_t234_qspi_sd.xml";' >> ${target}.conf
+}
+
+
+function restore_nvme_cfg()
+{
+	sed -i -e '$ d' ${target}.conf
+}
+
 function create_signed_images()
 {
 	echo "${script_name} - creating signed images"
@@ -300,9 +312,21 @@ function create_signed_images()
 	rootfs_size=$(du -ms "${rfs_dir}" | awk '{print $1}')
 	rootfs_size=$((rootfs_size + (rootfs_size / 10) + 100))
 
+	if [[ ${is_nvme} == "yes" ]];then
+		change_nvme_cfg_to_sd
+	fi
 	# Generate signed images
-	BOARDID="${boardid}" BOARDSKU="${boardsku}" FAB="${rev}" BUILD_SD_IMAGE=1 BOOTDEV="${rootfs_dev}" "${l4t_dir}/flash.sh" "--no-flash" "--sign" "-S" "${rootfs_size}MiB" "${target}" "${rootfs_dev}"
+	if [[ ${is_nvme} == "yes" ]];then
+		BOARDID="${boardid}" BOARDSKU="${boardsku}" FAB="${rev}" BUILD_SD_IMAGE=1 BOOTDEV=nvme0n1p1 "${l4t_dir}/flash.sh" "--no-flash" "--sign" "-S" "${rootfs_size}MiB" "${target}" nvme0n1p1
+	else
+		BOARDID="${boardid}" BOARDSKU="${boardsku}" FAB="${rev}" BUILD_SD_IMAGE=1 BOOTDEV="${rootfs_dev}" "${l4t_dir}/flash.sh" "--no-flash" "--sign" "-S" "${rootfs_size}MiB" "${target}" "${rootfs_dev}"
+	fi
+
 	popd
+
+	if [[ ${is_nvme} == "yes" ]];then
+		restore_nvme_cfg
+	fi
 
 	if [ ! -f "${bootloader_dir}/flashcmd.txt" ]; then
 		echo "ERROR: ${bootloader_dir}/flashcmd.txt not found" > /dev/stderr
@@ -327,39 +351,10 @@ function create_signed_images()
 	fi
 }
 
-function backup_nvme_signed_cfg()
-{
-	cp -rv "${signed_image_dir}/${signed_cfg}" "${signed_image_dir}/${signed_cfg}_backup"
-}
-
-function add_missing_file_for_signed_cfg()
-{
-	GPT_PRI_FILE=$(find ${signed_image_dir} -name "gpt_primary*bin"| rev| cut -d '/' -f 1| rev)
-	GPT_PRI_LINE=$(( $(grep -n "\"A_kernel\"" "${signed_image_dir}/${signed_cfg}" | cut -d ':' -f 1) -1 ))
-	sed -i "${GPT_PRI_LINE}s|</partition>|<filename> ${GPT_PRI_FILE} </filename></partition>|" "${signed_image_dir}/${signed_cfg}"
-
-	GPT_SEC_FILE=$(echo ${GPT_PRI_FILE}| sed 's|primary|secondary|')
-	GPT_SEC_LINE=$(grep -n "</partition>" "${signed_image_dir}/${signed_cfg}" | tail -1 | cut -d ':' -f 1)
-	sed -i "${GPT_SEC_LINE}s|</partition>|<filename> ${GPT_SEC_FILE} </filename></partition>|" "${signed_image_dir}/${signed_cfg}"
-
-	MBR_FILE=$(find ${signed_image_dir} -name "mbr*bin"| rev| cut -d '/' -f 1| rev)
-	MBR_LINE=$(( $(grep -n "\"primary_gpt\"" "${signed_image_dir}/${signed_cfg}" | cut -d ':' -f 1) -1 ))
-	sed -i "${MBR_LINE}s|</partition>|<filename> ${MBR_FILE} </filename></partition>|" "${signed_image_dir}/${signed_cfg}"
-}
-
-function restore_nvme_signed_cfg()
-{
-	cp -rv "${signed_image_dir}/${signed_cfg}_backup" "${signed_image_dir}/${signed_cfg}"
-}
-
 function create_partitions()
 {
 	echo "${script_name} - create partitions"
 
-	if [[ ${rootfs_dev} = "nvme0n1p1" ]];then
-		backup_nvme_signed_cfg
-		add_missing_file_for_signed_cfg
-	fi
 	partitions=($("${l4t_tools_dir}/nvptparser.py" "${signed_image_dir}/${signed_cfg}" "${storage}"))
 
 	sgdisk -og "${sd_blob_name}"
@@ -404,10 +399,6 @@ function write_partitions()
 
 	losetup -d "${loop_dev}"
 	loop_dev=""
-
-	if [[ ${rootfs_dev} = "nvme0n1p1" ]];then
-		restore_nvme_signed_cfg
-	fi
 }
 
 boardsku=""
