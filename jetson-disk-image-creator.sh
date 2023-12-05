@@ -373,7 +373,7 @@ function create_partitions()
 function write_partitions()
 {
 	echo "${script_name} - write partitions"
-	loop_dev="$(losetup --show -f -P "${sd_blob_name}")"
+	(sleep 1; echo "p")|sudo fdisk "${sd_blob_name}" > fdisk_info.txt
 
 	for part in "${partitions[@]}"; do
 		eval "${part}"
@@ -392,13 +392,13 @@ function write_partitions()
 		fi
 
 		if [ "${target_file}" != "" ] && [ "${part_file}" != "" ]; then
-			echo "${script_name} - writing ${target_file}"
-			sudo dd if="${target_file}" of="${loop_dev}p${part_num}"
+			SEEK_NUM=$(cat fdisk_info.txt |tr -s ' '|grep -P ".img${part_num} "| cut -d ' ' -f 2)
+			echo "${script_name} - writing ${target_file}", part_num=${part_num}, SEEK_NUM=${SEEK_NUM}
+			sudo dd if="${target_file}" of="${sd_blob_name}" bs=512 seek=${SEEK_NUM} conv=notrunc
 		fi
 	done
 
-	losetup -d "${loop_dev}"
-	loop_dev=""
+	rm fdisk_info.txt
 }
 
 boardsku=""
