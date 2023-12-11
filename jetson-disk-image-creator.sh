@@ -176,6 +176,7 @@ function check_device()
 		esac
 		;;
 	tn-tek6020-orin|tn-tek6040-orin|tn-tek6070-orin|tn-tek6100-orin)
+		is_tek_orin="yes"
 		case "${rootfs_dev}" in
 		"NVMe" | "nvme")
 			rootfs_dev="mmcblk1p1"
@@ -381,11 +382,13 @@ function create_signed_images()
 	rootfs_size=$(du -ms "${rfs_dir}" | awk '{print $1}')
 	rootfs_size=$((rootfs_size + (rootfs_size / 10) + 100))
 
-	if [[ ${is_nvme} == "yes" ]];then
+	if [[ ${is_tek_orin} == "yes" ]];then
 		change_nvme_cfg_to_sd
-		rootfs_dev="nvme0n1p1"
 	fi
 	# Generate signed images
+	if [[ ${is_nvme} == "yes" ]];then
+		rootfs_dev="nvme0n1p1"
+	fi
 	flash_env_args="BOARDID=${boardid} BOARDSKU=${boardsku} FAB=${rev} BUILD_SD_IMAGE=1 BOOTDEV=${rootfs_dev} "
 	flash_cmd_args="--no-flash --sign -S ${rootfs_size}MiB "
 	if [ -n "${pkc_file}" ]; then
@@ -400,7 +403,7 @@ function create_signed_images()
 	fi
 	popd
 
-	if [[ ${is_nvme} == "yes" ]];then
+	if [[ ${is_tek_orin} == "yes" ]];then
 		restore_nvme_cfg
 	fi
 
