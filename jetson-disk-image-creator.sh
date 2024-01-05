@@ -27,10 +27,10 @@ function usage()
 	echo "			   jetson-agx-xavier-devkit"
 	echo "		           jetson-agx-orin-devkit"
 	echo "		           jetson-orin-nano-devkit"
-	echo "	                   tn-tek6100-orin"
-	echo "	                   tn-tek6070-orin"
-	echo "	                   tn-tek6040-orin"
-	echo "	                   tn-tek6020-orin"
+	echo "	                   tn-tek6100-orin-nx"
+	echo "	                   tn-tek6070-orin-nx"
+	echo "	                   tn-tek6040-orin-nano"
+	echo "	                   tn-tek6020-orin-nano"
 	echo "	                   tn-tev-rpi22-tevi"
 	echo "	                   tn-tev-rpi22-tevs"
 	echo "	                   tn-vls3-orin-evk-tevi"
@@ -40,10 +40,10 @@ function usage()
 	echo "			   jetson-agx-xavier-devkit: default"
 	echo "			   jetson-agx-orin-devkit: default"
 	echo "			   jetson-orin-nano-devkit: default"
-	echo "	                   tn-tek6100-orin: default"
-	echo "	                   tn-tek6070-orin: default"
-	echo "	                   tn-tek6040-orin: default"
-	echo "	                   tn-tek6020-orin: default"
+	echo "	                   tn-tek6100-orin-nx: default"
+	echo "	                   tn-tek6070-orin-nx: default"
+	echo "	                   tn-tek6040-orin-nano: default"
+	echo "	                   tn-tek6020-orin-nano: default"
 	echo "	                   tn-tev-rpi22-tevi: default"
 	echo "	                   tn-tev-rpi22-tevs: default"
 	echo "	                   tn-vls3-orin-evk-tevi: default"
@@ -53,10 +53,10 @@ function usage()
 	echo "			   jetson-agx-xavier-devkit: SD/USB"
 	echo "			   jetson-agx-orin-devkit: SD/USB"
 	echo "			   jetson-orin-nano-devkit: SD/USB"
-	echo "	                   tn-tek6100-orin: NVMe/USB"
-	echo "	                   tn-tek6070-orin: NVMe/USB"
-	echo "	                   tn-tek6040-orin: NVMe/USB"
-	echo "	                   tn-tek6020-orin: NVMe/USB"
+	echo "	                   tn-tek6100-orin-nx: NVMe/USB"
+	echo "	                   tn-tek6070-orin-nx: NVMe/USB"
+	echo "	                   tn-tek6040-orin-nano: NVMe/USB"
+	echo "	                   tn-tek6020-orin-nano: NVMe/USB"
 	echo "	                   tn-tev-rpi22-tevi: SD/USB"
 	echo "	                   tn-tev-rpi22-tevs: SD/USB"
 	echo "	                   tn-vls3-orin-evk-tevi: SD/USB"
@@ -135,7 +135,7 @@ function check_device()
 			;;
 		esac
 		;;
-	tn-tek6020-orin|tn-tek6040-orin|tn-tek6070-orin|tn-tek6100-orin)
+	tn-tek6020-orin-nano|tn-tek6040-orin-nano|tn-tek6070-orin-nx|tn-tek6100-orin-nx)
 		is_tek_orin="yes"
 		case "${rootfs_dev}" in
 		"NVMe" | "nvme")
@@ -226,28 +226,28 @@ function check_pre_req()
 			target="${board}"
 			storage="sdcard"
 			;;
-		tn-tek6100-orin)
+		tn-tek6100-orin-nx)
 			boardid="3767"
 			boardsku="0000"
-			target="tn-tek6100-orin"
+			target="tn-tek6100-orin-nx"
 			storage="sdcard"
 			;;
-		tn-tek6070-orin)
+		tn-tek6070-orin-nx)
 			boardid="3767"
 			boardsku="0001"
-			target="tn-tek6070-orin"
+			target="tn-tek6070-orin-nx"
 			storage="sdcard"
 			;;
-		tn-tek6040-orin)
+		tn-tek6040-orin-nano)
 			boardid="3767"
 			boardsku="0003"
-			target="tn-tek6040-orin"
+			target="tn-tek6040-orin-nano"
 			storage="sdcard"
 			;;
-		tn-tek6020-orin)
+		tn-tek6020-orin-nano)
 			boardid="3767"
 			boardsku="0004"
-			target="tn-tek6020-orin"
+			target="tn-tek6020-orin-nano"
 			storage="sdcard"
 			;;
 		*)
