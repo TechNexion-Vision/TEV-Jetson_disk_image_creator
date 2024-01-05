@@ -40,8 +40,8 @@ function usage()
 	echo "                  tn-tek6020-orin-nano"
 	echo "                  tn-tev-rpi22-tevi"
 	echo "                  tn-tev-rpi22-tevs"
-	echo "                  tn-vls3-orin-evk-tevi"
-	echo "                  tn-vls3-orin-evk-tevs"
+	echo "                  tn-vls3-orin-evk-vli"
+	echo "                  tn-vls3-orin-evk-vls3"
 	echo ""
 	echo "          revision - SKU revision number"
 	echo "                  jetson-xavier-nx-devkit: default"
@@ -56,8 +56,8 @@ function usage()
 	echo "                  tn-tek6020-orin-nano: default"
 	echo "                  tn-tev-rpi22-tevi: default"
 	echo "                  tn-tev-rpi22-tevs: default"
-	echo "                  tn-vls3-orin-evk-tevi: default"
-	echo "                  tn-vls3-orin-evk-tevs: default"
+	echo "                  tn-vls3-orin-evk-vli: default"
+	echo "                  tn-vls3-orin-evk-vls3: default"
 	echo ""
 	echo "          device - Root filesystem device"
 	echo "                  jetson-xavier-nx-devkit: SD/USB"
@@ -72,8 +72,8 @@ function usage()
 	echo "                  tn-tek6020-orin-nano: NVMe/USB"
 	echo "                  tn-tev-rpi22-tevi: SD/USB"
 	echo "                  tn-tev-rpi22-tevs: SD/USB"
-	echo "                  tn-vls3-orin-evk-tevi: SD/USB"
-	echo "                  tn-vls3-orin-evk-tevs: SD/USB"
+	echo "                  tn-vls3-orin-evk-vli: SD/USB"
+	echo "                  tn-vls3-orin-evk-vls3: SD/USB"
 	echo ""
 	echo "          PKC file (optional) - Private key used for signing images."
 	echo ""
@@ -139,7 +139,7 @@ function check_device()
 			;;
 		esac
 		;;
-	jetson-orin-nano-devkit|tn-tev-rpi22-tevi|tn-tev-rpi22-tevs|tn-vls3-orin-evk-tevi|tn-vls3-orin-evk-tevs)
+	jetson-orin-nano-devkit|tn-tev-rpi22-tevi|tn-tev-rpi22-tevs|tn-vls3-orin-evk-vli|tn-vls3-orin-evk-vls3)
 		case "${rootfs_dev}" in
 		"SD" | "sd")
 			rootfs_dev="mmcblk0p1"
@@ -275,7 +275,7 @@ function check_pre_req()
 			target="jetson-agx-orin-devkit"
 			storage="sdmmc_user"
 			;;
-		jetson-orin-nano-devkit|tn-tev-rpi22-tevi|tn-tev-rpi22-tevs|tn-vls3-orin-evk-tevi|tn-vls3-orin-evk-tevs)
+		jetson-orin-nano-devkit|tn-tev-rpi22-tevi|tn-tev-rpi22-tevs|tn-vls3-orin-evk-vli|tn-vls3-orin-evk-vls3)
 			boardid="3767"
 			boardsku="0005"
 			target="${board}"
