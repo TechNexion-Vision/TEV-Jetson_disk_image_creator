@@ -33,8 +33,8 @@ function usage()
 	echo "	                   tn-tek6020-orin-nano"
 	echo "	                   tn-tev-rpi22-tevi"
 	echo "	                   tn-tev-rpi22-tevs"
-	echo "	                   tn-vls3-orin-evk-tevi"
-	echo "	                   tn-vls3-orin-evk-tevs"
+	echo "	                   tn-vls3-orin-evk-vli"
+	echo "	                   tn-vls3-orin-evk-vls3"
 	echo "	revision	- SKU revision number"
 	echo "	 		   jetson-xavier-nx-devkit: default"
 	echo "			   jetson-agx-xavier-devkit: default"
@@ -46,8 +46,8 @@ function usage()
 	echo "	                   tn-tek6020-orin-nano: default"
 	echo "	                   tn-tev-rpi22-tevi: default"
 	echo "	                   tn-tev-rpi22-tevs: default"
-	echo "	                   tn-vls3-orin-evk-tevi: default"
-	echo "	                   tn-vls3-orin-evk-tevs: default"
+	echo "	                   tn-vls3-orin-evk-vli: default"
+	echo "	                   tn-vls3-orin-evk-vls3: default"
 	echo "	device   	- Root filesystem device"
 	echo "			   jetson-xavier-nx-devkit: SD/USB"
 	echo "			   jetson-agx-xavier-devkit: SD/USB"
@@ -59,8 +59,8 @@ function usage()
 	echo "	                   tn-tek6020-orin-nano: NVMe/USB"
 	echo "	                   tn-tev-rpi22-tevi: SD/USB"
 	echo "	                   tn-tev-rpi22-tevs: SD/USB"
-	echo "	                   tn-vls3-orin-evk-tevi: SD/USB"
-	echo "	                   tn-vls3-orin-evk-tevs: SD/USB"
+	echo "	                   tn-vls3-orin-evk-vli: SD/USB"
+	echo "	                   tn-vls3-orin-evk-vls3: SD/USB"
 	echo "Example:"
 	echo "${script_name} -o sd-blob.img -b jetson-xavier-nx-devkit -d SD"
 	echo "${script_name} -o sd-blob.img -b jetson-agx-orin-devkit -d USB"
@@ -122,7 +122,7 @@ function check_device()
 			;;
 		esac
 		;;
-	jetson-orin-nano-devkit|tn-tev-rpi22-tevi|tn-tev-rpi22-tevs|tn-vls3-orin-evk-tevi|tn-vls3-orin-evk-tevs)
+	jetson-orin-nano-devkit|tn-tev-rpi22-tevi|tn-tev-rpi22-tevs|tn-vls3-orin-evk-vli|tn-vls3-orin-evk-vls3)
 		case "${rootfs_dev}" in
 		"SD" | "sd")
 			rootfs_dev="mmcblk1p1"
@@ -221,7 +221,7 @@ function check_pre_req()
 			target="jetson-agx-orin-devkit"
 			storage="sdmmc_user"
 			;;
-		jetson-orin-nano-devkit|tn-tev-rpi22-tevi|tn-tev-rpi22-tevs|tn-vls3-orin-evk-tevi|tn-vls3-orin-evk-tevs)
+		jetson-orin-nano-devkit|tn-tev-rpi22-tevi|tn-tev-rpi22-tevs|tn-vls3-orin-evk-vli|tn-vls3-orin-evk-vls3)
 			boardid="3767"
 			target="${board}"
 			storage="sdcard"
