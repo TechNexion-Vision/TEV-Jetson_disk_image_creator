@@ -179,8 +179,7 @@ function check_device()
 		is_tek_orin="yes"
 		case "${rootfs_dev}" in
 		"NVMe" | "nvme")
-			rootfs_dev="mmcblk1p1"
-			is_nvme="yes"
+			rootfs_dev="nvme0n1p1"
 			;;
 		"USB" | "usb")
 			rootfs_dev="sda1"
@@ -365,11 +364,13 @@ function create_raw_image()
 function change_nvme_cfg_to_sd()
 {
 	echo 'EMMC_CFG="flash_t234_qspi_sd.xml";' >> ${target}.conf
+	echo 'BOARDSKU="0005"' >> ${target}.conf
 }
 
 
 function restore_nvme_cfg()
 {
+	sed -i -e '$ d' ${target}.conf
 	sed -i -e '$ d' ${target}.conf
 }
 
@@ -386,9 +387,6 @@ function create_signed_images()
 		change_nvme_cfg_to_sd
 	fi
 	# Generate signed images
-	if [[ ${is_nvme} == "yes" ]];then
-		rootfs_dev="nvme0n1p1"
-	fi
 	flash_env_args="BOARDID=${boardid} BOARDSKU=${boardsku} FAB=${rev} BUILD_SD_IMAGE=1 BOOTDEV=${rootfs_dev} "
 	flash_cmd_args="--no-flash --sign -S ${rootfs_size}MiB "
 	if [ -n "${pkc_file}" ]; then
