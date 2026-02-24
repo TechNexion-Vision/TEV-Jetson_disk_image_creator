@@ -190,6 +190,9 @@ function check_revision()
 	jetson-orin-nano-devkit-super)
 		rev="300"
 		;;
+	jetson-agx-orin-devkit)
+		rev="500"
+		;;
 	esac
 }
 
@@ -253,6 +256,7 @@ function check_pre_req()
 			;;
 		jetson-agx-orin-devkit)
 			boardid="3701"
+			boardsku="0005"
 			target="jetson-agx-orin-devkit"
 			storage="sdmmc_user"
 			;;
