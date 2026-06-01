@@ -36,6 +36,8 @@ function usage()
 	echo "                  igx-orin-safety"
 	echo "                  tn-tek6100-orin-nx"
 	echo "                  tn-tek6040-orin-nano"
+	echo "                  tn-tek7000-orin-nx"
+	echo "                  tn-tek7000-orin-nano"
 	echo ""
 	echo "          revision - SKU revision number"
 	echo "                  jetson-xavier-nx-devkit: default"
@@ -46,6 +48,8 @@ function usage()
 	echo "                  igx-orin-safety: default"
 	echo "                  tn-tek6100-orin-nx: default"
 	echo "                  tn-tek6040-orin-nano: default"
+	echo "                  tn-tek7000-orin-nx: default"
+	echo "                  tn-tek7000-orin-nano: default"
 	echo ""
 	echo "          device - Root filesystem device"
 	echo "                  jetson-xavier-nx-devkit: SD/USB"
@@ -56,6 +60,8 @@ function usage()
 	echo "                  igx-orin-safety: USB"
 	echo "                  tn-tek6100-orin-nx: NVMe/USB"
 	echo "                  tn-tek6040-orin-nano: NVMe/USB"
+	echo "                  tn-tek7000-orin-nx: NVMe/USB"
+	echo "                  tn-tek7000-orin-nano: NVMe/USB"
 	echo ""
 	echo "          PKC file (optional) - Private key used for signing images."
 	echo ""
@@ -63,6 +69,7 @@ function usage()
 	echo "          ${script_name} -o sd-blob.img -b jetson-xavier-nx-devkit -d SD"
 	echo "          ${script_name} -o sd-blob.img -b jetson-agx-orin-devkit -d USB"
 	echo "          ${script_name} -o sep_ist.img -b igx-orin-safety -d SD -u ./rsa_privkey.pem"
+	echo "          ${script_name} -o tn-nvme.img -b tn-tek7000-orin-nx -d NVME"
 	exit 1
 }
 
@@ -157,7 +164,7 @@ function check_device()
 			;;
 		esac
 		;;
-	tn-tek6040-orin-nano|tn-tek6100-orin-nx)
+	tn-tek*)
 		is_tek_orin="yes"
 		case "${rootfs_dev}" in
 		"NVMe" | "nvme")
@@ -286,6 +293,18 @@ function check_pre_req()
 			boardid="3767"
 			boardsku="0003"
 			target="tn-tek6040-orin-nano"
+			storage="sdcard"
+			;;
+		tn-tek7000-orin-nx)
+			boardid="3767"
+			boardsku="0000"
+			target="tn-tek7000-orin-nx"
+			storage="sdcard"
+			;;
+		tn-tek7000-orin-nano)
+			boardid="3767"
+			boardsku="0003"
+			target="tn-tek7000-orin-nano"
 			storage="sdcard"
 			;;
 		*)
